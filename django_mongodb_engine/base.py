@@ -5,6 +5,7 @@ from django.db.backends.signals import connection_created
 from django.conf import settings
 
 from pymongo.connection import Connection
+from pymongo import ReplicaSetConnection
 from pymongo.collection import Collection
 
 from .creation import DatabaseCreation
@@ -129,7 +130,10 @@ class DatabaseWrapper(NonrelDatabaseWrapper):
             options[key.lower()] = options.pop(key)
 
         try:
-            self.connection = Connection(host=host, port=port, **options)
+            if 'replicaset' in options:
+                self.connection = ReplicaSetConnection(host=host, port=port, **options)
+            else:
+                self.connection = Connection(host=host, port=port, **options)
             self.database = self.connection[db_name]
         except TypeError:
             exc_info = sys.exc_info()
