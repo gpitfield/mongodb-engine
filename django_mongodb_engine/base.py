@@ -1,9 +1,9 @@
 import copy
 import sys
+
 from django.core.exceptions import ImproperlyConfigured
 from django.db.backends.signals import connection_created
 from django.conf import settings
-
 from pymongo.connection import Connection
 from pymongo import ReplicaSetConnection
 from pymongo.collection import Collection
@@ -127,11 +127,15 @@ class DatabaseWrapper(NonrelDatabaseWrapper):
 
         # lower-case all OPTIONS keys
         for key in options.iterkeys():
-            options[key.lower()] = options.pop(key)
+            if not key == 'replicaSet':
+                options[key.lower()] = options.pop(key)
 
         try:
-            if 'replicaset' in options:
-                self.connection = ReplicaSetConnection(host=host, port=port, **options)
+            if 'replicaSet' in options:
+                # needs to be return to mixed case
+                port = port if port else 27017
+                host_or_uri = '%s:%s'%(host, port)
+                self.connection = ReplicaSetConnection(host_or_uri, **options)
             else:
                 self.connection = Connection(host=host, port=port, **options)
             self.database = self.connection[db_name]
