@@ -134,7 +134,7 @@ class DatabaseWrapper(NonrelDatabaseWrapper):
             if 'replicaSet' in options:
                 # needs to be return to mixed case
                 port = port if port else 27017
-                host_or_uri = '%s:%s'%(host, port)
+                host_or_uri = ['%s:%s'%(h, port) for h in host]
                 self.connection = ReplicaSetConnection(host_or_uri, **options)
             else:
                 self.connection = Connection(host=host, port=port, **options)
