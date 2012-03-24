@@ -132,8 +132,8 @@ class DatabaseWrapper(NonrelDatabaseWrapper):
 
         try:
             if 'replicaSet' in options:
-                port = port if port else 27017
-                host_or_uri = ['%s:%s'%(h, port) for h in host]
+                port = port or 27017
+                host_or_uri = ','.join(['%s:%s'%(h, port) for h in host])
                 self.connection = ReplicaSetConnection(host_or_uri, **options)
             else:
                 self.connection = Connection(host=host, port=port, **options)
