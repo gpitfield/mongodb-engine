@@ -127,12 +127,11 @@ class DatabaseWrapper(NonrelDatabaseWrapper):
 
         # lower-case all OPTIONS keys
         for key in options.iterkeys():
-            if not key == 'replicaSet':
+            if not key == 'replicaSet': # needs to be kept mixed case
                 options[key.lower()] = options.pop(key)
 
         try:
             if 'replicaSet' in options:
-                # needs to be return to mixed case
                 port = port if port else 27017
                 host_or_uri = ['%s:%s'%(h, port) for h in host]
                 self.connection = ReplicaSetConnection(host_or_uri, **options)
