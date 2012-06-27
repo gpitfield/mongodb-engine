@@ -10,6 +10,7 @@ from django.db.utils import DatabaseError
 
 from pymongo.collection import Collection
 from pymongo.connection import Connection
+from pymongo import ReplicaSetConnection
 
 # handle pymongo backward compatibility
 try:
@@ -222,12 +223,18 @@ class DatabaseWrapper(NonrelDatabaseWrapper):
             self.operation_flags = {'save': flags, 'delete': flags,
                                     'update': flags}
 
-        # Lower-case all OPTIONS keys.
+        # lower-case all OPTIONS keys
         for key in options.iterkeys():
-            options[key.lower()] = options.pop(key)
+            if not key == 'replicaSet': # needs to be kept mixed case
+                options[key.lower()] = options.pop(key)
 
         try:
-            self.connection = Connection(host=host, port=port, **options)
+            if 'replicaSet' in options:
+                port = port or 27017
+                host_or_uri = ','.join(['%s:%s'%(h, port) for h in host])
+                self.connection = ReplicaSetConnection(host_or_uri, **options)
+            else:
+                self.connection = Connection(host=host, port=port, **options)
             self.database = self.connection[db_name]
         except TypeError:
             exc_info = sys.exc_info()
