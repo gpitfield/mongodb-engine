@@ -232,6 +232,8 @@ class DatabaseWrapper(NonrelDatabaseWrapper):
             if 'replicaSet' in options:
                 port = port or 27017
                 host_or_uri = ','.join(['%s:%s'%(h, port) for h in host])
+                if 'use_greenlets' in options and options['use_greenlets']:
+                    from gevent import monkey; monkey.patch_socket()
                 self.connection = ReplicaSetConnection(host_or_uri, **options)
             else:
                 self.connection = Connection(host=host, port=port, **options)
